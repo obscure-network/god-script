@@ -71,6 +71,8 @@ function draw_purpose(bc){
 function amem(bc){
   bc.points += 1;
   bc.purpose = new_position();
+  $("#" + bc.name).addClass("yahoo");
+  setTimeout('$("#' + bc.name + '").removeClass("yahoo");', 500);
 }
 
 // Light!
