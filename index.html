@@ -9,17 +9,22 @@
   </head>
   <body>
     
-    <div class="content">
-      <img src="god.png" alt="God Script">
-      <div id="ambient"></div>
-    </div>
-    
     <!-- Scripts -->
     <script
     src="https://code.jquery.com/jquery-3.3.1.min.js"
     integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
     crossorigin="anonymous"></script>
     <script src="main.js"></script>
+    
+    <div class="content">
+      <img src="god.png" alt="God Script" onclick="light();">
+      <div id="ambient"></div>
+      <div>
+        Lifes: <span id="lifes">0</span> // 
+        Deaths: <span id="deaths">0</span> //
+        Generation: <span id="generation">1</span>
+      </div>
+    </div>
     
   </body>
 </html>

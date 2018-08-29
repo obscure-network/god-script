@@ -12,6 +12,9 @@ a {
   margin: 0 auto;
   position: relative;
 }
+.content img {
+  cursor: pointer;
+}
 .life {
   width: 25px;
   height: 25px;

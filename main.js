@@ -1,19 +1,32 @@
 var biotic_components = [];
 var abiotic_components = [];
 var ambient_size = 300;
+var deaths = [];
 
 function make(color) {
-  biotic_components.push({
-    name: "life" + biotic_components.length,
+  var _life ={
+    name: "life" + makeid(),
     color: color,
+    death: false,
     position: new_position(),
     step: 1,
-    points: 0,
-    purpose: null,
+    age: 0,
+    purpose: new_position(),
     objective: null,
-    distraction: null,
+    distraction: false,
+    family: [],
     interval: null,
-  })
+  }
+  biotic_components.push(_life);
+  return _life;
+}
+
+function makeid() {
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (var i = 0; i < 5; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  return text;
 }
 
 function new_position(){
@@ -53,10 +66,11 @@ function walk_decision(bc) {
 
 function draw_life(bc){
   $('#' + bc.name).css({
+    "display": (bc.death ? "none":"block"),
     "top": bc.position.x + "px",
     "left": bc.position.y + "px",
     "background-color": bc.color
-  }).text(bc.points);
+  }).text(bc.age);
 }
 
 function draw_purpose(bc){
@@ -69,42 +83,127 @@ function draw_purpose(bc){
 
 // achieved the purpose
 function amem(bc){
-  bc.points += 1;
+  bc.age += 1;
   bc.purpose = new_position();
   $("#" + bc.name).addClass("yahoo");
   setTimeout('$("#' + bc.name + '").removeClass("yahoo");', 500);
 }
 
+function avgcolor(color1,color2){
+    var avg  = function(a,b){ return (a+b)/2; },
+        t16  = function(c){ return parseInt((''+c).replace('#',''),16) },
+        hex  = function(c){ var t = (c>>0).toString(16);
+                           return t.length == 2 ? t : '0' + t },
+        hex1 = t16(color1),
+        hex2 = t16(color2),
+        r    = function(hex){ return hex >> 16 & 0xFF},
+        g    = function(hex){ return hex >> 8 & 0xFF},
+        b    = function(hex){ return hex & 0xFF},
+        res  = '#' + hex(avg(r(hex1),r(hex2))) 
+                   + hex(avg(g(hex1),g(hex2))) 
+                   + hex(avg(b(hex1),b(hex2)));
+    return res;
+}
+
+function life_rules(bc1, bc2){
+  if( bc1.name == bc2.name ) return false; //do not fuck with yourself
+  else if ( bc1.age < 18 || bc2.age < 18 ) return false; // +18
+  else if ( bc1.age > 50 || bc2.age > 50 ) return false; // to old to fuck
+  else if ( bc1.family.indexOf(bc2.name) != -1 || bc2.family.indexOf(bc1.name) != -1 ) return false; // incest prohibited
+  return true;
+}
+
+function die(bc) {
+  for (var i = 0; i < biotic_components.length; i++) {
+    var _bc = biotic_components[i];
+    if (_bc.name == bc.name){
+      _bc.death = true;
+      deaths.push(_bc);
+      clearInterval(_bc.interval); // GHOST WTFF
+      biotic_components.splice(i, 1);
+    }
+  }
+}
+
+function build_life(bc){
+  $('#ambient').append("<span class='life' id='" + bc.name + "'>:)</span>");
+  $('#ambient').append("<span class='purpose' id='t" + bc.name + "'></span>");
+  
+  //death age
+  bc.death_age = Math.floor(Math.random()*(100-10+1)+10);
+  
+  bc.interval = setInterval(function(bc){
+    if(bc.death) return;
+    //has no purpose? make one
+    if (!bc.purpose) bc.purpose = new_position();
+    draw_purpose(bc);
+    
+    if (!bc.distraction) {
+      for (var i = 0; i < biotic_components.length; i++) {
+        var an_bc = biotic_components[i];
+        if (life_rules(an_bc, bc)){
+          
+          if(distance(an_bc.position, bc.position) < 25){
+            bc.distraction = true;
+            an_bc.distraction = true;
+            
+            //Fuck and Babe
+            var babe_color = avgcolor(an_bc.color, bc.color);
+            var babe_bc = make(babe_color); //new babe
+            build_life(babe_bc);
+            
+            // Build Family
+            babe_bc.family.push(bc.name, an_bc.name);
+            bc.family.push(an_bc.name,babe_bc.name);
+            an_bc.family.push(bc.name, babe_bc.name);
+            
+            // set new purpose
+            bc.purpose = new_position();
+            an_bc.purpose = new_position();
+            
+            // Stop Distraction and go to purpose
+            bc.distraction = false;
+            an_bc.distraction = false;
+          }
+          
+        }
+      }
+      
+      //walking to purpose
+      walk_decision(bc)
+    }
+    
+    //death time?
+    if (bc.age == bc.death_age)
+      die(bc);
+    
+    if (distance(bc.position, bc.purpose) == 0) amem(bc);
+    draw_life(bc);
+
+  }, 10, bc);
+}
+
+setInterval(function(){
+  $("#lifes").text(biotic_components.length)
+  $("#deaths").text(deaths.length)
+  if(biotic_components.length == 0) {
+    $("#generation").text( Number($("#generation").text()) + 1 );
+    light();
+  }
+}, 1000)
+
 // Light!
 function light() {
+  biotic_components = [];
+  deaths = [];
+  var lifes =["#FF0000", "#0000ff", "#008000"];
+  for(var i = 0; i < lifes.length; i++)
+    make(lifes[i])
+    
   $('#ambient').fadeIn().css({"display":"block", "width": ambient_size + "px", "height": ambient_size + "px"});
   $('#ambient').html("");
   for (var i = 0; i < biotic_components.length;i++){
     var bc = biotic_components[i];
-    $('#ambient').append("<span class='life' id='" + bc.name + "'>:)</span>");
-    $('#ambient').append("<span class='purpose' id='t" + bc.name + "'></span>");
-    
-    bc.interval = setInterval(function(bc){
-
-      //has no purpose? make one
-      if (!bc.purpose) bc.purpose = new_position();
-      draw_purpose(bc);
-
-      //walking to purpose
-      walk_decision(bc)
-      
-      if (distance(bc.position, bc.purpose) == 0) amem(bc);
-
-      draw_life(bc);
-
-    }, 10, bc);
-    
+    build_life(bc);
   } 
 }
-
-var lifes =["#D1C4E9", "#B39DDB", "#9575CD", "#7E57C2", "#673AB7", "#5E35B1", "#512DA8", "#4527A0", "#311B92"]
-
-for(var i = 0; i < lifes.length; i++)
-  make(lifes[i])
-
-light();
