@@ -15,6 +15,7 @@ function make(color) {
     objective: null,
     distraction: false,
     family: [],
+    children: [],
     interval: null,
   }
   biotic_components.push(_life);
@@ -106,7 +107,7 @@ function avgcolor(color1,color2){
 }
 
 function life_rules(bc1, bc2){
-  if( bc1.name == bc2.name ) return false; //do not fuck with yourself
+  if( bc1.name == bc2.name ) return false; //don't fuck yourself
   else if ( bc1.age < 18 || bc2.age < 18 ) return false; // +18
   else if ( bc1.age > 50 || bc2.age > 50 ) return false; // to old to fuck
   else if ( bc1.family.indexOf(bc2.name) != -1 || bc2.family.indexOf(bc1.name) != -1 ) return false; // incest prohibited
@@ -119,7 +120,7 @@ function die(bc) {
     if (_bc.name == bc.name){
       _bc.death = true;
       deaths.push(_bc);
-      clearInterval(_bc.interval); // GHOST WTFF
+      window.clearInterval(_bc.interval); // GHOST WTFF
       biotic_components.splice(i, 1);
     }
   }
@@ -130,9 +131,9 @@ function build_life(bc){
   $('#ambient').append("<span class='purpose' id='t" + bc.name + "'></span>");
   
   //death age
-  bc.death_age = Math.floor(Math.random()*(100-10+1)+10);
+  bc.death_age = Math.floor(Math.random()*(90-1+1)+1);
   
-  bc.interval = setInterval(function(bc){
+  bc.interval = window.setInterval(function(bc){
     if(bc.death) return;
     //has no purpose? make one
     if (!bc.purpose) bc.purpose = new_position();
@@ -156,6 +157,10 @@ function build_life(bc){
             babe_bc.family.push(bc.name, an_bc.name);
             bc.family.push(an_bc.name,babe_bc.name);
             an_bc.family.push(bc.name, babe_bc.name);
+            
+            // Build Children
+            bc.children.push(babe_bc.name);
+            an_bc.children.push(babe_bc.name);
             
             // set new purpose
             bc.purpose = new_position();
@@ -190,6 +195,19 @@ setInterval(function(){
     $("#generation").text( Number($("#generation").text()) + 1 );
     light();
   }
+  
+  var html_insert = "";
+  for (var i = 0; i < biotic_components.length; i++) {
+    var bc = biotic_components[i];
+    html_insert += "<div class='bc'>" +
+    "<div style='color:" + bc.color + "'>Name: " + bc.name + "</div>" +
+    "<div>Age: " + bc.age + "</div>" +
+    "<div>Death Age: " + bc.death_age + "</div>" +
+    "<div>Childrens: " + bc.children.length + "</div>" +
+    "</div>";
+  }
+  $("#biotics").html(html_insert)
+  
 }, 1000)
 
 // Light!

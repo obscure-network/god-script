@@ -47,6 +47,23 @@ a {
   animation-duration: .5s;
   animation-iteration-count: 1;
 }
+.rules {
+  width: 200px;
+  border: 1px solid rgba(0, 0, 0, .5);
+  float: left;
+}
+.biotics {
+  width: 80%;
+  float: left;
+  height: 200px;
+}
+.biotics .bc {
+  border: 1px solid black;
+  width: 200px;
+  float: left;
+  display: inline-block;
+}
+
 @keyframes yahoo {
   0% {  font-size: 14px; box-shadow: -10px 10px 10px -5px rgba(0,0,0,0.75); height: 25px; width: 25px; line-height: 25px; }
   50% {  font-size: 6px; box-shadow: 2px 3px 5px -5px rgba(0,0,0,0.75); height: 10px; width:10px; line-height: 10px; }
